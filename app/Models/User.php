@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Traits\HasRoles;
+use App\Models\Requisicao;
+use Hashids\Hashids;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -9,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -19,7 +22,9 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'username',
         'password',
+        'is_active',
     ];
 
     /**
@@ -40,4 +45,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'users_roles');
+    }
+
+    public function requisicoes()
+    {
+        return $this->hasMany(Requisicao::class);
+    }
+
+    public function encode($id)
+    {
+      $hash = new Hashids('', 10);
+      return $hash->encode($id);
+    }
+
+    public function decode($id)
+    {
+      $hash = new Hashids('', 10);
+      return $hash->decode($id);
+    }
 }
